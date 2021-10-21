@@ -1,0 +1,54 @@
+
+
+<script>
+    $('#categoryForm').on('submit', function(e) {
+        var id = $("#category_id").val();
+        $('#name-er').text('')
+        $('#image-er').text('')
+        e.preventDefault()
+        let formValue = new FormData(this)
+        let base64str = $('#crop-image').val()
+        if (base64str)
+            formValue.append('image', dataURLtoFile(base64str))
+        $.ajax({
+            type: "post",
+            url: `{{ url('update-category/${id}')}}`,
+            data: formValue,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                if (response.status) {
+                    toastCall(response.message, "success");
+                    window.location.href = "{{ url('category') }}"
+                }
+            },
+            error: function(response) {
+                let error = response.responseJSON;
+                if (error.errors.name) {
+                    $('#name-er').text(error.errors.name[0])
+                }
+                if (error.errors.image) {
+                    $('#image-er').text(error.errors.image[0])
+                }
+            },
+        });
+    })
+
+    function dataURLtoFile(dataurl, filename) {
+
+        var arr = dataurl.split(','),
+            mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]),
+            n = bstr.length,
+            u8arr = new Uint8Array(n);
+
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+
+        return new File([u8arr], filename, {
+            type: mime
+        });
+    }
+</script>
